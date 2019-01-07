@@ -28,6 +28,10 @@ fn main() {
 }
 
 fn color(ray: Ray) -> Vec3 {
+    if hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.5, ray) {
+        return Vec3::new(1.0, 0.0, 0.0);
+    }
+
     // Get unit vector so -1.0 < y < 1.0
     let unit_direction = ray.direction.unit();
     // Some algebra so that 0.0 < t < 1.0
@@ -36,4 +40,12 @@ fn color(ray: Ray) -> Vec3 {
     let white = Vec3::new(1.0, 1.0, 1.0);
     let blue = Vec3::new(0.5, 0.7, 1.0);
     return white.scale(1.0 - t) + blue.scale(t);
+}
+
+fn hit_sphere(center: Vec3, radius: f64, ray: Ray) -> bool {
+    let a = ray.direction.dot(ray.direction);
+    let b = 2.0 * ray.direction.dot(ray.origin - center);
+    let c = (ray.origin - center).dot(ray.origin - center) - radius*radius;
+    let discriminant = b*b - 4.0*a*c;
+    return discriminant > 0.0;
 }
