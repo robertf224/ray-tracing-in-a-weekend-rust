@@ -1,3 +1,4 @@
+use rand::Rng;
 use crate::vec3::Vec3;
 use crate::ray::Ray;
 use crate::hitable::{ Hitable, Hit };
@@ -42,5 +43,13 @@ impl Hitable for Sphere {
     }
 }
 
-
+pub fn random_point_in_unit_sphere() -> Vec3 {
+    let mut rng = rand::thread_rng();
+    loop {
+        let point = Vec3::new(rng.gen(), rng.gen(), rng.gen()).scale(2.0) - Vec3::new(1.0, 1.0, 1.0);
+        if point.length() < 1.0 {
+            return point;
+        }
+    }
+}
 

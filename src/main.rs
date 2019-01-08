@@ -37,6 +37,10 @@ fn main() {
                 pixel_color = pixel_color + color(r, &world);
             }
             pixel_color = pixel_color.scale(1.0 / ns as f64);
+            // Gamma correction (?)
+            pixel_color.x = pixel_color.x.sqrt();
+            pixel_color.y = pixel_color.y.sqrt();
+            pixel_color.z = pixel_color.z.sqrt();
 
             let ir = (pixel_color.x * 255.0) as u32;
             let ig = (pixel_color.y * 255.0) as u32;
@@ -47,11 +51,13 @@ fn main() {
 }
 
 fn color(ray: Ray, world: &Vec<Box<Hitable>>) -> Vec3 {
-    let hit = hitable::closest(world, ray, 0.0, f64::MAX);
+    let hit = hitable::closest(world, ray, 0.001, f64::MAX);
     if let Some(hit) = hit {
-        // Some algebra so that, for normal, 0.0 < x,y,z < 1.0
-        return (Vec3::new(1.0, 1.0, 1.0) + hit.normal).scale(0.5);
+        let tangent_unit_sphere_center = hit.point + hit.normal;
+        let target = tangent_unit_sphere_center + sphere::random_point_in_unit_sphere();
+        return color(Ray::new(hit.point, target - hit.point), world).scale(0.5);
     } else {
+        // Background
         // Get unit vector so -1.0 < y < 1.0
         let unit_direction = ray.direction.unit();
         // Some algebra so that 0.0 < t < 1.0
