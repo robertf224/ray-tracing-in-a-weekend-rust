@@ -4,16 +4,17 @@ mod hitable;
 mod sphere;
 mod camera;
 
+use indicatif::ProgressBar;
+use std::f64;
 use crate::vec3::Vec3;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::hitable::{ Hitable };
 use crate::camera::Camera;
-use std::f64;
 
 fn main() {
-    let nx = 200;
-    let ny = 100;
+    let nx = 800;
+    let ny = 400;
     let ns = 100;
     println!("P3 {} {} 255", nx, ny);
 
@@ -26,6 +27,8 @@ fn main() {
     let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
     let ground = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0);
     let world: Vec<Box<Hitable>> = vec![Box::new(sphere), Box::new(ground)];
+
+    let progress = ProgressBar::new(nx * ny);
 
     for j in (0..ny).rev() {
         for i in 0..nx {
@@ -46,8 +49,11 @@ fn main() {
             let ig = (pixel_color.y * 255.0) as u32;
             let ib = (pixel_color.z * 255.0) as u32;
             println!("{} {} {}", ir, ig, ib);
+            progress.inc(1);
         }
     }
+
+    progress.finish();
 }
 
 fn color(ray: Ray, world: &Vec<Box<Hitable>>) -> Vec3 {
