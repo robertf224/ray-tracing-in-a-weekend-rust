@@ -2,21 +2,26 @@ mod vec3;
 mod ray;
 mod hitable;
 mod sphere;
+mod camera;
 
 use crate::vec3::Vec3;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::hitable::{ Hitable };
+use crate::camera::Camera;
 use std::f64;
 
 fn main() {
     let nx = 200;
     let ny = 100;
-    let lower_left_corner = Vec3::new(-2.0, -1.0, -1.0);
+    let ns = 100;
+    println!("P3 {} {} 255", nx, ny);
+
+    let anchor = Vec3::new(-2.0, -1.0, -1.0);
     let horizontal = Vec3::new(4.0, 0.0, 0.0);
     let vertical = Vec3::new(0.0, 2.0, 0.0);
-    let camera = Vec3::new(0.0, 0.0, 0.0);
-    println!("P3 {} {} 255", nx, ny);
+    let origin = Vec3::new(0.0, 0.0, 0.0);
+    let camera = Camera::new(origin, anchor, horizontal, vertical);
 
     let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
     let ground = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0);
@@ -24,14 +29,18 @@ fn main() {
 
     for j in (0..ny).rev() {
         for i in 0..nx {
-            let u = (i as f64) / (nx as f64);
-            let v = (j as f64) / (ny as f64);
-            let r = Ray::new(camera, lower_left_corner + horizontal.scale(u) + vertical.scale(v));
+            let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);
+            for s in 0..ns {
+                let u = (i as f64 + s as f64 / ns as f64) / (nx as f64);
+                let v = (j as f64 + s as f64 / ns as f64) / (ny as f64);
+                let r = camera.ray(u, v);
+                pixel_color = pixel_color + color(r, &world);
+            }
+            pixel_color = pixel_color.scale(1.0 / ns as f64);
 
-            let color = color(r, &world);
-            let ir = (color.x * 255.0) as u32;
-            let ig = (color.y * 255.0) as u32;
-            let ib = (color.z * 255.0) as u32;
+            let ir = (pixel_color.x * 255.0) as u32;
+            let ig = (pixel_color.y * 255.0) as u32;
+            let ib = (pixel_color.z * 255.0) as u32;
             println!("{} {} {}", ir, ig, ib);
         }
     }
