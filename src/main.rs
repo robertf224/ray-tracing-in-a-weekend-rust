@@ -3,6 +3,7 @@ mod ray;
 mod hitable;
 mod sphere;
 mod camera;
+pub mod materials;
 
 use indicatif::ProgressBar;
 use std::f64;
@@ -11,6 +12,8 @@ use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::hitable::{ Hitable };
 use crate::camera::Camera;
+use crate::materials::diffuse::Diffuse;
+use crate::materials::metal::Metal;
 
 fn main() {
     let nx = 800;
@@ -24,9 +27,11 @@ fn main() {
     let origin = Vec3::new(0.0, 0.0, 0.0);
     let camera = Camera::new(origin, anchor, horizontal, vertical);
 
-    let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
-    let ground = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0);
-    let world: Vec<Box<Hitable>> = vec![Box::new(sphere), Box::new(ground)];
+    let diffuse_sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, Box::new(Diffuse::new(Vec3::new(0.8, 0.3, 0.3))));
+    let ground = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, Box::new(Diffuse::new(Vec3::new(0.8, 0.8, 0.0))));
+    let metal_sphere_one = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, Box::new(Metal::new(Vec3::new(0.8, 0.6, 0.2), 0.3)));
+    let metal_sphere_two = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, Box::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), 1.0)));
+    let world: Vec<Box<Hitable>> = vec![Box::new(diffuse_sphere), Box::new(ground), Box::new(metal_sphere_one), Box::new(metal_sphere_two)];
 
     let progress = ProgressBar::new(nx * ny);
 
@@ -37,7 +42,7 @@ fn main() {
                 let u = (i as f64 + s as f64 / ns as f64) / (nx as f64);
                 let v = (j as f64 + s as f64 / ns as f64) / (ny as f64);
                 let r = camera.ray(u, v);
-                pixel_color = pixel_color + color(r, &world);
+                pixel_color = pixel_color + color(r, &world, 0);
             }
             pixel_color = pixel_color.scale(1.0 / ns as f64);
             // Gamma correction (?)
@@ -56,12 +61,18 @@ fn main() {
     progress.finish();
 }
 
-fn color(ray: Ray, world: &Vec<Box<Hitable>>) -> Vec3 {
+fn color(ray: Ray, world: &Vec<Box<Hitable>>, depth: u32) -> Vec3 {
     let hit = hitable::closest(world, ray, 0.001, f64::MAX);
     if let Some(hit) = hit {
-        let tangent_unit_sphere_center = hit.point + hit.normal;
-        let target = tangent_unit_sphere_center + sphere::random_point_in_unit_sphere();
-        return color(Ray::new(hit.point, target - hit.point), world).scale(0.5);
+        if depth > 50 {
+            return Vec3::new(0.0, 0.0, 0.0);
+        }
+
+        let scatter = hit.material.scatter(ray, &hit);
+        return match scatter {
+            Some(scatter) => color(scatter.scattered_ray, world, depth + 1).product(scatter.attenuation),
+            None => Vec3::new(0.0, 0.0, 0.0),
+        };
     } else {
         // Background
         // Get unit vector so -1.0 < y < 1.0

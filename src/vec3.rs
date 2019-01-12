@@ -41,6 +41,14 @@ impl Vec3 {
         let scale = 1.0 / self.length();
         return self.scale(scale)
     }
+
+    pub fn product(&self, other: Vec3) -> Vec3 {
+        Vec3 {
+            x: self.x * other.x,
+            y: self.y * other.y,
+            z: self.z * other.z
+        }
+    }
 }
 
 impl Add for Vec3 {

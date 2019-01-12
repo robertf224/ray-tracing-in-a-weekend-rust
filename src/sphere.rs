@@ -1,17 +1,17 @@
-use rand::Rng;
 use crate::vec3::Vec3;
 use crate::ray::Ray;
 use crate::hitable::{ Hitable, Hit };
+use crate::materials::material::Material;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Sphere {
     pub center: Vec3,
-    pub radius: f64
+    pub radius: f64,
+    pub material: Box<Material>
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f64) -> Sphere {
-        Sphere { center, radius }
+    pub fn new(center: Vec3, radius: f64, material: Box<Material>) -> Sphere {
+        Sphere { center, radius, material }
     }
 }
 
@@ -29,27 +29,18 @@ impl Hitable for Sphere {
         if t_min < solution_one && solution_one < t_max {
             let point = ray.point(solution_one);
             let normal = (point - self.center).unit();
-            return Some(Hit { t: solution_one, point, normal });
+            return Some(Hit { t: solution_one, point, normal, material: &self.material });
         }
 
         let solution_two = (-b + discriminant.sqrt()) / (2.0 * a);
         if t_min < solution_two && solution_two < t_max {
             let point = ray.point(solution_two);
             let normal = (point - self.center).unit();
-            return Some(Hit { t: solution_two, point, normal });
+            return Some(Hit { t: solution_two, point, normal, material: &self.material });
         }
         
         return None;
     }
 }
 
-pub fn random_point_in_unit_sphere() -> Vec3 {
-    let mut rng = rand::thread_rng();
-    loop {
-        let point = Vec3::new(rng.gen(), rng.gen(), rng.gen()).scale(2.0) - Vec3::new(1.0, 1.0, 1.0);
-        if point.length() < 1.0 {
-            return point;
-        }
-    }
-}
 
