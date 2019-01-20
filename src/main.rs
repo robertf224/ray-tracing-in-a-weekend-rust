@@ -12,12 +12,13 @@ use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::hitable::{ Hitable };
 use crate::camera::Camera;
-use crate::materials::diffuse::Diffuse;
+use crate::materials::matte::Matte;
 use crate::materials::metal::Metal;
+use crate::materials::glass::Glass;
 
 fn main() {
-    let nx = 800;
-    let ny = 400;
+    let nx = 200;
+    let ny = 100;
     let ns = 100;
     println!("P3 {} {} 255", nx, ny);
 
@@ -27,11 +28,11 @@ fn main() {
     let origin = Vec3::new(0.0, 0.0, 0.0);
     let camera = Camera::new(origin, anchor, horizontal, vertical);
 
-    let diffuse_sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, Box::new(Diffuse::new(Vec3::new(0.8, 0.3, 0.3))));
-    let ground = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, Box::new(Diffuse::new(Vec3::new(0.8, 0.8, 0.0))));
-    let metal_sphere_one = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, Box::new(Metal::new(Vec3::new(0.8, 0.6, 0.2), 0.3)));
-    let metal_sphere_two = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, Box::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), 1.0)));
-    let world: Vec<Box<Hitable>> = vec![Box::new(diffuse_sphere), Box::new(ground), Box::new(metal_sphere_one), Box::new(metal_sphere_two)];
+    let matte_sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, Box::new(Matte::new(Vec3::new(0.8, 0.3, 0.3))));
+    let ground = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, Box::new(Matte::new(Vec3::new(0.8, 0.8, 0.0))));
+    let metal_sphere = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, Box::new(Metal::new(Vec3::new(0.8, 0.6, 0.2), 0.3)));
+    let glass_sphere = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, Box::new(Glass::new(1.5)));
+    let world: Vec<Box<Hitable>> = vec![Box::new(matte_sphere), Box::new(ground), Box::new(metal_sphere), Box::new(glass_sphere)];
 
     let progress = ProgressBar::new(nx * ny);
 

@@ -1,4 +1,8 @@
 pub mod material;
-pub mod diffuse;
+pub mod matte;
 pub mod metal;
-mod utils;
+pub mod glass;
+pub mod utils;
+
+#[cfg(test)]
+mod tests;
