@@ -19,15 +19,17 @@ use crate::materials::metal::Metal;
 use crate::materials::glass::Glass;
 
 fn main() {
-    let nx = 1000;
-    let ny = 500;
+    let nx = 1200;
+    let ny = 800;
     let ns = 100;
     println!("P3 {} {} 255", nx, ny);
 
-    let origin = Vec3::new(6.0, 2.0, 3.0);
-    let focus = Vec3::new(0.0, 1.0, 0.0);
+    let origin = Vec3::new(13.0, 2.0, 3.0);
+    let focus = Vec3::new(0.0, 0.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
-    let camera = Camera::new(origin, focus, vup, 90.0, (nx / ny) as f64);
+    let dist_to_focus = 10.0;
+    let aperture = 0.1;
+    let camera = Camera::new(origin, focus, vup, 20.0, (nx / ny) as f64, aperture, dist_to_focus);
 
     let world = random_world();
 
@@ -90,19 +92,21 @@ fn random_world() -> Vec<Box<Hitable>> {
 
     let mut rng = rand::thread_rng();
     let radius = 0.2;
-    for i in -12..12 {
-        for j in -12..12 {
+    for i in -10..10 {
+        for j in -10..10 {
             let x = rng.gen::<f64>() * (i as f64);
             let z = rng.gen::<f64>() * (j as f64);
             let center = Vec3::new(x, 0.2, z);
 
-            let material_choice = rng.gen_range(1, 4);
-            let material: Box<Material> = match material_choice {
-                1 => Box::new(Matte::new(Vec3::new(rng.gen::<f64>()*rng.gen::<f64>(), rng.gen::<f64>()*rng.gen::<f64>(), rng.gen::<f64>()*rng.gen::<f64>()))),
-                2 => Box::new(Metal::new(Vec3::new(0.5*(1.0 + rng.gen::<f64>()), 0.5*(1.0 + rng.gen::<f64>()), 0.5*(1.0 + rng.gen::<f64>())), 0.5*rng.gen::<f64>())),
-                3 => Box::new(Glass::new(1.5)),
-                _ => Box::new(Glass::new(1.5)),
-            };
+            let material_choice: f64 = rng.gen();
+            let material: Box<Material>;
+            if material_choice < 0.8 {
+                material = Box::new(Matte::new(Vec3::new(rng.gen::<f64>()*rng.gen::<f64>(), rng.gen::<f64>()*rng.gen::<f64>(), rng.gen::<f64>()*rng.gen::<f64>())));
+            } else if material_choice < 0.95 {
+                material = Box::new(Metal::new(Vec3::new(0.5*(1.0 + rng.gen::<f64>()), 0.5*(1.0 + rng.gen::<f64>()), 0.5*(1.0 + rng.gen::<f64>())), 0.5*rng.gen::<f64>()));
+            } else {
+                material = Box::new(Glass::new(1.5));
+            }
 
             let sphere = Sphere::new(center, radius, material);
             world.push(Box::new(sphere));            
