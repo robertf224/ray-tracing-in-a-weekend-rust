@@ -4,9 +4,10 @@ Rust implementation of the basic ray tracer described in the book Ray Tracing in
 ```bash
     git clone https://github.com/robertf224/ray-tracing-in-a-weekend-rust.git
     cd ray-tracing-in-a-weekend-rust
-    cargo run
+    cargo run > output/out.ppm && open output/out.ppm
 ```
 
+## Example output
 ![Example](https://raw.githubusercontent.com/robertf224/ray-tracing-in-a-weekend-rust/master/assets/example.png)
 
 ## Notes
