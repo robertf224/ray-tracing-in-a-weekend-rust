@@ -30,7 +30,7 @@ impl Camera {
     }
 
     pub fn ray(&self, s: f64, t: f64) -> Ray {
-        let rd = random_point_in_unit_circle();
+        let rd = random_point_in_unit_circle().scale(self.lens_radius);
         let effective_origin = self.origin + self.u.scale(rd.x) + self.v.scale(rd.y);
         Ray::new(effective_origin, self.anchor + self.horizontal.scale(s) + self.vertical.scale(t) - effective_origin)
     }
